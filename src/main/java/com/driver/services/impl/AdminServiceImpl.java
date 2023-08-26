@@ -36,8 +36,9 @@ public class AdminServiceImpl implements AdminService {
         Optional<Admin> optionalAdmin = adminRepository1.findById(adminId);
         Admin admin = optionalAdmin.get();
         
-        ServiceProvider serviceProvider = new ServiceProvider(providerName);
+        ServiceProvider serviceProvider = new ServiceProvider();
         serviceProvider.setAdmin(admin);
+        serviceProvider.setName(providerName);
 
         List<ServiceProvider> serviceProviderList = admin.getServiceProviders();
         serviceProviderList.add(serviceProvider);

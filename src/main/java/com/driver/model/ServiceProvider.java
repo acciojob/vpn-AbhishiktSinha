@@ -29,6 +29,9 @@ public class ServiceProvider {
     public ServiceProvider(String name) {
         this.name = name;
     }
+    public ServiceProvider() {
+
+    }
 
     public int getId() {
         return id;
