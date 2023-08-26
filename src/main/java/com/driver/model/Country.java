@@ -12,7 +12,7 @@ public class Country{
 
     private CountryName countryName;
 
-    private String countryCode;
+    private String code;
 
     @OneToOne(mappedBy = "country", cascade = CascadeType.ALL)
     User user;
@@ -21,9 +21,9 @@ public class Country{
     @JoinColumn
     ServiceProvider serviceProvider;
 
-    public Country(CountryName countryName, String countryCode) {
+    public Country(CountryName countryName, String code) {
         this.countryName = countryName;
-        this.countryCode = countryCode;
+        this.code = code;
     }
     public Country() {
     }
@@ -44,12 +44,12 @@ public class Country{
         this.countryName = countryName;
     }
 
-    public String getCountryCode() {
-        return countryCode;
+    public String getCode() {
+        return code;
     }
 
-    public void setCountryCode(String countryCode) {
-        this.countryCode = countryCode;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public User getUser() {

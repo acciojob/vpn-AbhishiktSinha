@@ -21,7 +21,7 @@ public class User {
 
     @OneToOne
     @JoinColumn
-    private Country country;
+    private Country originalCountry;
 
     @ManyToMany
     private List<ServiceProvider> serviceProviderList = new ArrayList<>();
@@ -96,12 +96,12 @@ public class User {
         this.connected = connected;
     }
 
-    public Country getCountry() {
-        return country;
+    public Country getOriginalCountry() {
+        return originalCountry;
     }
 
-    public void setCountry(Country country) {
-        this.country = country;
+    public void setOriginalCountry(Country originalCountry) {
+        this.originalCountry = originalCountry;
     }
 
     public List<ServiceProvider> getServiceProviderList() {

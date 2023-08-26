@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
         user.setMaskedIp(null);
 
         User userWithId = userRepository3.save(user);
-        userWithId.setOriginalIp(country.getCountryCode()+"."+userWithId.getId());
+        userWithId.setOriginalIp(country.getCode()+"."+userWithId.getId());
 
         return userRepository3.save(userWithId);
     }
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
         ServiceProvider serviceProvider = optionalServiceProvider.get();
 
         user.getServiceProviderList().add(serviceProvider);
-        serviceProvider.getUserList().add(user);
+        serviceProvider.getUsers().add(user);
 
         serviceProviderRepository3.save(serviceProvider);
         return user;

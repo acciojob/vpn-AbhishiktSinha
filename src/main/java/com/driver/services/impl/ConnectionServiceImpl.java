@@ -28,7 +28,7 @@ public class ConnectionServiceImpl implements ConnectionService {
         if(user.getConnected() == true) {
             throw new Exception("Already connected");
         }
-        else if(user.getCountry().getCountryName().toString() == countryName) {
+        else if(user.getOriginalCountry().getCountryName().toString() == countryName) {
             return user;
         }
         else {
@@ -50,7 +50,7 @@ public class ConnectionServiceImpl implements ConnectionService {
 
                         user.setConnected(true);
                         user.setVpnCountry(sp_country);
-                        user.setMaskedIp(sp_country.getCountryCode() + "." + serviceProvider.getId() + "." + user.getId());
+                        user.setMaskedIp(sp_country.getCode() + "." + serviceProvider.getId() + "." + user.getId());
 
                         serviceProvider.getConnectionList().add(connectionWithId);
                         user.getConnectionList().add(connectionWithId);
@@ -96,13 +96,13 @@ public class ConnectionServiceImpl implements ConnectionService {
         if(receiver.getConnected() == true) {
             receiverCountry = receiver.getVpnCountry().toString();
         } else
-            receiverCountry = receiver.getCountry().toString();
+            receiverCountry = receiver.getOriginalCountry().toString();
 
 
-        if(sender.getCountry().toString().equalsIgnoreCase(receiverCountry)) {
+        if(sender.getOriginalCountry().toString().equalsIgnoreCase(receiverCountry)) {
             return sender;
         }
-        if(sender.getCountry().toString().equalsIgnoreCase(receiverCountry)) {
+        if(sender.getOriginalCountry().toString().equalsIgnoreCase(receiverCountry)) {
             return sender;
         }
 
@@ -144,7 +144,7 @@ public class ConnectionServiceImpl implements ConnectionService {
 
                     sender.setConnected(true);
                     sender.setVpnCountry(sp_country);
-                    sender.setMaskedIp(sp_country.getCountryCode() + "." + serviceProvider.getId() + "." + sender.getId());
+                    sender.setMaskedIp(sp_country.getCode() + "." + serviceProvider.getId() + "." + sender.getId());
 
                     serviceProvider.getConnectionList().add(connectionWithId);
                     sender.getConnectionList().add(connectionWithId);
