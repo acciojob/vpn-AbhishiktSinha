@@ -23,15 +23,13 @@ public class ConnectionServiceImpl implements ConnectionService {
     @Override
     public User connect(int userId, String countryName) throws Exception{
         Optional<User> optionalUser = userRepository2.findById(userId);
-        if(!optionalUser.isPresent()) throw new Exception("User not found");
-
         User user = optionalUser.get();
 
 
         if(user.getConnected() == true || user.getMaskedIp() != null) {
             throw new Exception("Already connected");
         }
-        else if(user.getOriginalCountry().getCountryName().toString() == countryName) {
+        else if(user.getOriginalCountry().getCountryName().toString().equals(countryName)) {
             return user;
         }
         else {
