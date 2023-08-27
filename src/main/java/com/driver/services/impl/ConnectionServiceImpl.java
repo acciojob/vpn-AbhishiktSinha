@@ -23,9 +23,12 @@ public class ConnectionServiceImpl implements ConnectionService {
     @Override
     public User connect(int userId, String countryName) throws Exception{
         Optional<User> optionalUser = userRepository2.findById(userId);
+        if(!optionalUser.isPresent()) throw new Exception("User not found");
+
         User user = optionalUser.get();
 
-        if(user.getConnected() == true) {
+
+        if(user.getConnected() == true || user.getMaskedIp() != null) {
             throw new Exception("Already connected");
         }
         else if(user.getOriginalCountry().getCountryName().toString() == countryName) {
@@ -64,8 +67,8 @@ public class ConnectionServiceImpl implements ConnectionService {
             }
 
             //no service provider offers vpn to the country
-            throw new Exception("Unable to connect");
         }
+        throw new Exception("Unable to connect");
 
 
     }
@@ -81,19 +84,23 @@ public class ConnectionServiceImpl implements ConnectionService {
         user.setVpnCountry(null);
         user.setMaskedIp(null);
         user.setConnected(null);
+        userRepository2.save(user);
 
         return user;
     }
     @Override
     public User communicate(int senderId, int receiverId) throws Exception {
         Optional<User> optionalSender = userRepository2.findById(senderId);
+        if(!optionalSender.isPresent()) throw new Exception("Sender not found");
+
         Optional<User> optionalReceiver = userRepository2.findById(receiverId);
+        if(!optionalReceiver.isPresent()) throw new Exception("Receiver not found");
 
         User sender = optionalSender.get();
         User receiver = optionalReceiver.get();
 
         String receiverCountry;
-        if(receiver.getConnected() == true) {
+        if(receiver.getConnected() == true || receiver.getMaskedIp() != null) {
             receiverCountry = receiver.getVpnCountry().toString();
         } else
             receiverCountry = receiver.getOriginalCountry().toString();
@@ -102,7 +109,7 @@ public class ConnectionServiceImpl implements ConnectionService {
         if(sender.getOriginalCountry().toString().equalsIgnoreCase(receiverCountry)) {
             return sender;
         }
-        if(sender.getOriginalCountry().toString().equalsIgnoreCase(receiverCountry)) {
+        if(sender.getConnected()==true && sender.getVpnCountry().toString().equalsIgnoreCase(receiverCountry)) {
             return sender;
         }
 
@@ -134,7 +141,7 @@ public class ConnectionServiceImpl implements ConnectionService {
 
                 String availableCountry = sp_country.getCountryName().toString();
 
-                if(availableCountry.equalsIgnoreCase(receiverCountry)) {
+                if(availableCountry.equalsIgnoreCase(receiverCountry) && sp_Id < sp_smallestID) {
 
                     //establish connection
                     Connection connection = new Connection();
