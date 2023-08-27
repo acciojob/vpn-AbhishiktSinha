@@ -11,6 +11,7 @@ import com.driver.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +28,10 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Admin register(String username, String password) {
-        Admin admin = new Admin(username, password);
+        Admin admin = new Admin();
+        admin.setUsername(username);
+        admin.setPassword(password);
+        admin.setServiceProviders(new ArrayList<>());
         adminRepository1.save(admin);
         return admin;
     }
@@ -43,6 +47,7 @@ public class AdminServiceImpl implements AdminService {
 
         List<ServiceProvider> serviceProviderList = admin.getServiceProviders();
         serviceProviderList.add(serviceProvider);
+        admin.setServiceProviders(serviceProviderList);
         
         adminRepository1.save(admin);
         return admin;
@@ -56,20 +61,8 @@ public class AdminServiceImpl implements AdminService {
         if(!optionalServiceProvider.isPresent()) throw new Exception("Service provider not found");
         
         ServiceProvider serviceProvider = optionalServiceProvider.get();
-        Country country;
-        if(countryName.equalsIgnoreCase("IND")) {
-            country = new Country(CountryName.IND, "001");
-        } else if(countryName.equalsIgnoreCase("USA")) {
-            country = new Country(CountryName.USA, "002");
-        } else if(countryName.equalsIgnoreCase("AUS")) {
-            country = new Country(CountryName.AUS, "003");
-        } else if(countryName.equalsIgnoreCase("CHI")) {
-            country = new Country(CountryName.CHI, "004");
-        } else if(countryName.equalsIgnoreCase("JPN")) {
-            country = new Country(CountryName.JPN, "005");
-        } else {
-            throw new Exception("Country not found");
-        }
+        Country country = new Country();
+        country.enrich(countryName);
 
         country.setServiceProvider(serviceProvider);
         //Country countryWithId = countryRepository1.save(country);

@@ -11,6 +11,7 @@ import com.driver.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,12 +26,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(String username, String password, String countryName) throws Exception{
-        Country country;
-        try{
-            country = findCountryByName(countryName);
-        } catch(Exception e) {
-            throw new Exception("Country not found");
-        }
+        Country country = new Country();
+        country.enrich(countryName);
 
         User user = new User();
         user.setUsername(username);
@@ -38,14 +35,15 @@ public class UserServiceImpl implements UserService {
         user.setMaskedIp(null);
         user.setConnected(false);
         user.setOriginalCountry(country);
+        country.setUser(user);
 
         User userWithId = userRepository3.save(user);
-        userWithId.setOriginalIp(country.getCode()+"."+userWithId.getId());
+        userWithId.setOriginalIp(userWithId.getOriginalCountry().getCode()+"."+userWithId.getId());
 
         userRepository3.save(userWithId);
         return userWithId;
     }
-    private Country findCountryByName(String countryName) throws Exception {
+    /*private Country findCountryByName(String countryName) throws Exception {
         Country country;
         if(countryName.equalsIgnoreCase("IND")) {
             country = new Country(CountryName.IND, "001");
@@ -61,7 +59,7 @@ public class UserServiceImpl implements UserService {
             throw new Exception("Country not found");
         }
         return country;
-    }
+    }*/
 
     @Override
     public User subscribe(Integer userId, Integer serviceProviderId) {
@@ -71,8 +69,13 @@ public class UserServiceImpl implements UserService {
         Optional<ServiceProvider> optionalServiceProvider = serviceProviderRepository3.findById(serviceProviderId);
         ServiceProvider serviceProvider = optionalServiceProvider.get();
 
-        user.getServiceProviderList().add(serviceProvider);
-        serviceProvider.getUsers().add(user);
+        List<ServiceProvider> serviceProviderList = user.getServiceProviderList();
+        serviceProviderList.add(serviceProvider);
+        user.setServiceProviderList(serviceProviderList);
+
+        List<User> userList = serviceProvider.getUsers();
+        userList.add(user);
+        serviceProvider.setUsers(userList);
 
         serviceProviderRepository3.save(serviceProvider);
         return user;

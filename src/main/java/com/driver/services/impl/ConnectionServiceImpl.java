@@ -40,8 +40,14 @@ public class ConnectionServiceImpl implements ConnectionService {
                 throw new Exception("Unable to connect");
             }
 
+            int minId = Integer.MAX_VALUE;
+            boolean subscribed = false;
+
             for(ServiceProvider serviceProvider : serviceProviderList) {
                 List<Country> sp_countryList = serviceProvider.getCountryList();
+                int sp_Id = serviceProvider.getId();
+
+                if(sp_Id >= minId) continue;
 
                 for(Country sp_country : sp_countryList) {
                     if(sp_country.getCountryName().toString().equalsIgnoreCase(countryName)) {
@@ -58,18 +64,22 @@ public class ConnectionServiceImpl implements ConnectionService {
                         serviceProvider.getConnectionList().add(connectionWithId);
                         user.getConnectionList().add(connectionWithId);
 
+                        sp_Id = serviceProvider.getId();
+                        subscribed = true;
+
                         userRepository2.save(user);
                         serviceProviderRepository2.save(serviceProvider);
 
-                        return user;
                     }
                 }
             }
 
+            if(!subscribed){
+                throw new Exception("Unable to connect");
+            }
             //no service provider offers vpn to the country
         }
-        throw new Exception("Unable to connect");
-
+        return user;
 
     }
     @Override
@@ -115,14 +125,14 @@ public class ConnectionServiceImpl implements ConnectionService {
 
         //find suitable vpn for sender
         try {
-            connectSenderToVPN(sender, receiverCountry);
+            connect(senderId, receiverCountry);
             return sender;
         } catch(Exception e) {
             throw new Exception("Cannot establish communication");
         }
     }
 
-    private void connectSenderToVPN(User sender, String receiverCountry) throws Exception {
+    /*private void connectSenderToVPN(User sender, String receiverCountry) throws Exception {
         List<ServiceProvider> serviceProviderList = sender.getServiceProviderList();
         if(serviceProviderList.size() == 0) {
             throw new Exception("Unable to connect");
@@ -141,7 +151,7 @@ public class ConnectionServiceImpl implements ConnectionService {
 
                 String availableCountry = sp_country.getCountryName().toString();
 
-                if(availableCountry.equalsIgnoreCase(receiverCountry) && sp_Id < sp_smallestID) {
+                if(availableCountry.equalsIgnoreCase(receiverCountry) && sp_Id < sp_smallestID ) {
 
                     //establish connection
                     Connection connection = new Connection();
@@ -155,6 +165,7 @@ public class ConnectionServiceImpl implements ConnectionService {
 
                     serviceProvider.getConnectionList().add(connectionWithId);
                     sender.getConnectionList().add(connectionWithId);
+                    sp_Id = serviceProvider.getId();
 
                     userRepository2.save(sender);
                     serviceProviderRepository2.save(serviceProvider);
@@ -165,5 +176,5 @@ public class ConnectionServiceImpl implements ConnectionService {
 
         //no service provider offers vpn to the country
         throw new Exception("Unable to connect");
-    }
+    }*/
 }

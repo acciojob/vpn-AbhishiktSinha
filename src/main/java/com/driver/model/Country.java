@@ -67,4 +67,25 @@ public class Country{
     public void setServiceProvider(ServiceProvider serviceProvider) {
         this.serviceProvider = serviceProvider;
     }
+
+    public void enrich(String countryName) throws Exception {
+        if(countryName.equalsIgnoreCase("IND")) {
+            this.setCountryName(CountryName.IND);
+            this.setCode(CountryName.IND.toCode());
+        } else if(countryName.equalsIgnoreCase("USA")) {
+            this.setCountryName(CountryName.USA);
+            this.setCode(CountryName.USA.toCode());
+        } else if(countryName.equalsIgnoreCase("AUS")) {
+            this.setCountryName(CountryName.AUS);
+            this.setCode(CountryName.AUS.toCode());
+        } else if(countryName.equalsIgnoreCase("CHI")) {
+            this.setCountryName(CountryName.CHI);
+            this.setCode(CountryName.CHI.toCode());
+        } else if(countryName.equalsIgnoreCase("JPN")) {
+            this.setCountryName(CountryName.JPN);
+            this.setCode(CountryName.JPN.toCode());
+        } else {
+            throw new Exception("Country not found");
+        }
+    }
 }
