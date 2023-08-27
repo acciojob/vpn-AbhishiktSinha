@@ -42,7 +42,8 @@ public class UserServiceImpl implements UserService {
         User userWithId = userRepository3.save(user);
         userWithId.setOriginalIp(country.getCode()+"."+userWithId.getId());
 
-        return userRepository3.save(userWithId);
+        userRepository3.save(userWithId);
+        return userWithId;
     }
     private Country findCountryByName(String countryName) throws Exception {
         Country country;
