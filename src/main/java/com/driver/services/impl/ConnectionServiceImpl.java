@@ -94,9 +94,8 @@ public class ConnectionServiceImpl implements ConnectionService {
             throw new Exception("Already disconnected");
         }
 
-        user.setVpnCountry(null);
         user.setMaskedIp(null);
-        user.setConnected(null);
+        user.setConnected(false);
         userRepository2.save(user);
 
         return user;
