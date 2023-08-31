@@ -25,33 +25,28 @@ public class ConnectionServiceImpl implements ConnectionService {
         Optional<User> optionalUser = userRepository2.findById(userId);
         User user = optionalUser.get();
 
-
         if(user.getConnected() == true || user.getMaskedIp() != null) {
             throw new Exception("Already connected");
         }
-        else if(user.getOriginalCountry().getCountryName().toString().equals(countryName)) {
+
+        Country givenCountry = new Country();
+        givenCountry.enrich(countryName);
+
+        if(user.getOriginalCountry().getCountryName().equals(givenCountry.getCountryName())) {
             return user;
         }
         else {
             List<ServiceProvider> serviceProviderList = user.getServiceProviderList();
-            if(serviceProviderList.size() == 0) {
-                throw new Exception("Unable to connect");
-            }
 
-            Country sp_country = new Country();
-            sp_country.enrich(countryName);
-
-            int minId = Integer.MAX_VALUE;
+            Integer minId = null;
             ServiceProvider sp_minId = null;
 
             for(ServiceProvider serviceProvider : serviceProviderList) {
                 List<Country> sp_countryList = serviceProvider.getCountryList();
                 int sp_Id = serviceProvider.getId();
 
-                if(sp_Id >= minId) continue;
-
                 for(Country country : sp_countryList) {
-                    if(country.getCountryName().toString().equalsIgnoreCase(countryName)) {
+                    if(country.getCode().equals(givenCountry.getCode())) {
 
                         //try to choose service provider
                         if(sp_minId == null || minId > sp_Id) {
@@ -74,8 +69,8 @@ public class ConnectionServiceImpl implements ConnectionService {
             List<Connection> userConnection = user.getConnectionList();
             userConnection.add(connection);
             user.setConnectionList(userConnection);
-            user.setMaskedIp(sp_country.getCode() + "." + sp_minId.getId() + "." + user.getId());
-            user.setVpnCountry(sp_country);
+            user.setMaskedIp(givenCountry.getCode() + "." + sp_minId.getId() + "." + user.getId());
+            user.setVpnCountry(givenCountry);
 
             connection.setServiceProvider(sp_minId);
             List<Connection> spConnectionList = sp_minId.getConnectionList();
