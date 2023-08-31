@@ -38,8 +38,11 @@ public class ConnectionServiceImpl implements ConnectionService {
                 throw new Exception("Unable to connect");
             }
 
+            Country sp_country = new Country();
+            sp_country.enrich(countryName);
+
             int minId = Integer.MAX_VALUE;
-            boolean subscribed = false;
+            ServiceProvider sp_minId = null;
 
             for(ServiceProvider serviceProvider : serviceProviderList) {
                 List<Country> sp_countryList = serviceProvider.getCountryList();
@@ -47,34 +50,41 @@ public class ConnectionServiceImpl implements ConnectionService {
 
                 if(sp_Id >= minId) continue;
 
-                for(Country sp_country : sp_countryList) {
-                    if(sp_country.getCountryName().toString().equalsIgnoreCase(countryName)) {
-                        //establish connection
-                        Connection connection = new Connection();
-                        connection.setUser(user);
-                        connection.setServiceProvider(serviceProvider);
-                        Connection connectionWithId = connectionRepository2.save(connection);
+                for(Country country : sp_countryList) {
+                    if(country.getCountryName().toString().equalsIgnoreCase(countryName)) {
 
-                        user.setConnected(true);
-                        user.setVpnCountry(sp_country);
-                        user.setMaskedIp(sp_country.getCode() + "." + serviceProvider.getId() + "." + user.getId());
-
-                        serviceProvider.getConnectionList().add(connectionWithId);
-                        user.getConnectionList().add(connectionWithId);
-
-                        sp_Id = serviceProvider.getId();
-                        subscribed = true;
-
-                        userRepository2.save(user);
-                        serviceProviderRepository2.save(serviceProvider);
-
+                        //try to choose service provider
+                        if(sp_minId == null || minId > sp_Id) {
+                            sp_minId = serviceProvider;
+                            minId = sp_Id;
+                        }
                     }
                 }
             }
 
-            if(!subscribed){
+            if(sp_minId == null) {
+                //did not find any suitable subscribed service provider
                 throw new Exception("Unable to connect");
             }
+
+            Connection connection = new Connection();
+
+            connection.setUser(user);
+            user.setConnected(true);
+            List<Connection> userConnection = user.getConnectionList();
+            userConnection.add(connection);
+            user.setConnectionList(userConnection);
+            user.setMaskedIp(sp_country.getCode() + "." + sp_minId.getId() + "." + user.getId());
+            user.setVpnCountry(sp_country);
+
+            connection.setServiceProvider(sp_minId);
+            List<Connection> spConnectionList = sp_minId.getConnectionList();
+            spConnectionList.add(connection);
+            sp_minId.setConnectionList(spConnectionList);
+
+            userRepository2.save(user);
+            serviceProviderRepository2.save(sp_minId);
+
             //no service provider offers vpn to the country
         }
         return user;
@@ -107,23 +117,21 @@ public class ConnectionServiceImpl implements ConnectionService {
         User sender = optionalSender.get();
         User receiver = optionalReceiver.get();
 
-        String receiverCountry;
+        CountryName receiverCountryName = null;
         if(receiver.getConnected() == true || receiver.getMaskedIp() != null) {
-            receiverCountry = receiver.getVpnCountry().toString();
+            String maskedCode = receiver.getMaskedIp().substring(0, 3);
+            if(maskedCode.equals("001")) receiverCountryName = CountryName.IND;
+            else if(maskedCode.equals("002")) receiverCountryName = CountryName.USA;
+            else if(maskedCode.equals("003")) receiverCountryName = CountryName.AUS;
+            else if(maskedCode.equals("004")) receiverCountryName = CountryName.CHI;
+            else if(maskedCode.equals("005")) receiverCountryName = CountryName.JPN;
         } else
-            receiverCountry = receiver.getOriginalCountry().toString();
+            receiverCountryName = receiver.getOriginalCountry().getCountryName();
 
-
-        if(sender.getOriginalCountry().toString().equalsIgnoreCase(receiverCountry)) {
-            return sender;
-        }
-        if(sender.getConnected()==true && sender.getVpnCountry().toString().equalsIgnoreCase(receiverCountry)) {
-            return sender;
-        }
 
         //find suitable vpn for sender
         try {
-            connect(senderId, receiverCountry);
+            connect(senderId, receiverCountryName.toString());
             return sender;
         } catch(Exception e) {
             throw new Exception("Cannot establish communication");
